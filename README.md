@@ -25,7 +25,7 @@ Making predictions with `rn-filter` requires tokenizing the sequences of interes
 ```
 rn-filter tokenize examples/test.fasta examples/test.nc
 ```
-Both text and FASTA files are accepted. The latter is executed via a config file, which must be pointed to the tokenized sequences.
+Both text and FASTA files are accepted. The latter is executed via a config file, which must be pointed to the tokenized sequences (under data.paths.predict).
 ```
 rn-filter examples/config.yaml
 ```

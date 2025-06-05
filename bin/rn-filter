@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+PARENT=${DIR%????}
+
+if [[ $1 == "tokenize" ]]; then
+    python3 "$DIR/_tokenize.py" ${@:2}
+else
+    if [[ $# -ne 1 ]]; then
+        echo "Usage: rn-filter CONFIG"
+        exit 1
+    fi
+    PYTHONPATH="$PARENT" python3 -m src predict --config $1
+fi

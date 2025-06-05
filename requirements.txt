@@ -1,0 +1,11 @@
+matplotlib
+psutil
+numpy
+torch
+pytorch-lightning
+jsonargparse[signatures]>=4.27.7
+xarray
+h5netcdf
+torchmetrics
+einops
+pyyaml

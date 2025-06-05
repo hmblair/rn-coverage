@@ -29,4 +29,4 @@ Both text and FASTA files are accepted. The latter is executed via a config file
 ```
 rn-filter examples/config.yaml
 ```
-The output `predictions/test.nc` will contain a single $`n x 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
+The output `predictions/test.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.

@@ -31,5 +31,5 @@ rn-converage examples/config.yaml
 ```
 The output `predictions/test.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
 
-See `examples` for a MWE.
+See `examples` for a MWE (you will need to point the config file to the downloaded checkpoint for it to work.)
 

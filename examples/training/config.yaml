@@ -1,29 +1,15 @@
 model:
-  class_path: src.training.modules.FinetuningModuleDenseHead
-  init_args:
-    model:
-      class_path: src.ribonanzanet.RibonanzaNet
-    out_size: 2
-    pooling:
-      type: 'mean'
-      dim: -2
-    name: rn-coverage
-    objectives:
-      loss:
-        class_path: src.training.optimisation.losses.LogMSELoss
-      mae:
-        class_path: torch.nn.L1Loss
+  name: rn-coverage
+  objectives:
+    loss:
+      class_path: src.training.optimisation.losses.LogMSELoss
+    mae:
+      class_path: torch.nn.L1Loss
 
 trainer:
-  precision: 16-mixed
   accumulate_grad_batches: 2
   gradient_clip_val: 1.0
   max_epochs: 10
-  logger:
-    class_path: pytorch_lightning.loggers.WandbLogger
-    init_args:
-      save_dir: ./logs/
-      log_model: all
   callbacks:
     - class_path: pytorch_lightning.callbacks.ModelCheckpoint
       init_args:
@@ -44,25 +30,15 @@ trainer:
         unfreeze_rate: 1
 
 optimizer:
-  class_path: torch.optim.AdamW
-  init_args:
-    lr: 0.001
+  lr: 0.001
 
-lr_scheduler: 
-  class_path: src.training.optimisation.lr_schedulers.LinearWarmupAndInverseSqrtDecayLR
-  init_args: 
-    warmup_epochs: 3
+lr_scheduler:
+  warmup_epochs: 3
 
 data:
-  class_path: src.data.datamodules.XarrayDataModule
-  init_args:
-    paths:
-      train:
-        - data/train-onemil1.nc
-      validate:
-        - data/val-onemil1.nc
-    target_variables:
-      - [[reads_2A3, reads_DMS], target]
-    batch_size: 16
-    input_variables:
-      - [[sequence_embeddings], x]
+  paths:
+    train:
+      - data/train-onemil1.nc
+    validate:
+      - data/val-onemil1.nc
+  batch_size: 16

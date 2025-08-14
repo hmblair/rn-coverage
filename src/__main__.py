@@ -9,4 +9,4 @@ torch.set_float32_matmul_precision(PRECISION)
 tqdm._instances.clear()
 
 if __name__ == "__main__":
-    LightningCLI()
+    LightningCLI(save_config_callback=None)

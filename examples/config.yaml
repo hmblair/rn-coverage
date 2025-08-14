@@ -8,7 +8,7 @@ model:
       type: 'mean'
       dim: -2
     name: rn-drop
-    ckpt_dir: checkpoints/RibonanzaNet-Filter.pt
+    ckpt_dir: checkpoints/rn-coverage.pt
 
 trainer:
   precision: 16-mixed
@@ -29,7 +29,7 @@ data:
   init_args:
     paths:
       predict:
-        - examples/test.nc
+        - data/test.nc
     target_variables:
       - [[2A3, DMS], target]
     batch_size: 1

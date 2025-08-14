@@ -1,0 +1,23 @@
+#!/bin/bash
+
+DIR="$(dirname "$0")"
+PARENT=$(dirname "$DIR")
+
+if [[ $1 == "tokenize" ]]; then
+    python3 "$DIR/_tokenize.py" ${@:2}
+elif [[ $1 == "predict" ]]; then
+    if [[ $# -ne 2 ]]; then
+        echo "Usage: rn-coverage predict CONFIG"
+        exit 1
+    fi
+    PYTHONPATH="$PARENT" python3 -m src predict --config $PARENT/src/config/inference.yaml --config $2
+elif [[ $1 == "train" ]]; then
+    if [[ $# -ne 2 ]]; then
+        echo "Usage: rn-coverage train CONFIG"
+        exit 1
+    fi
+    PYTHONPATH="$PARENT" python3 -m src fit --config $PARENT/src/config/training.yaml --config $2
+else
+    echo "Usage: rn-coverage tokenize|fit|predict"
+    exit 1
+fi

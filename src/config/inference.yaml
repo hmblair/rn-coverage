@@ -1,0 +1,30 @@
+model:
+  class_path: src.training.modules.FinetuningModuleDenseHead
+  init_args:
+    model:
+      class_path: src.ribonanzanet.RibonanzaNet
+    out_size: 2
+    pooling:
+      type: 'mean'
+      dim: -2
+
+trainer:
+  precision: 16-mixed
+  accelerator: gpu
+  callbacks:
+    - class_path: src.data.writing.netCDFDistributedPredictionWriter
+      init_args:
+        variable_name: reads
+        dimension_names:
+          - batch
+          - experiment_type
+        write_interval: batch
+
+data:
+  class_path: src.data.datamodules.XarrayDataModule
+  init_args:
+    target_variables:
+      - [[2A3, DMS], target]
+    batch_size: 1
+    input_variables:
+      - [[sequence], x]

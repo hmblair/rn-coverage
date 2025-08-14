@@ -129,6 +129,7 @@ class LogMSELoss(nn.Module):
     """
 
     def __init__(self) -> None:
+
         super().__init__()
         self.mse = nn.MSELoss()
 
@@ -149,7 +150,7 @@ class LogMSELoss(nn.Module):
             The logarithmic mean squared error between the given tensors.
         """
 
-        return self.mse(input, target)
+        return self.mse(input, torch.log(target))
 
 
 class LogNormalLoss(nn.Module):

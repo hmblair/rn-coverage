@@ -37,11 +37,10 @@ Coverage prediction is done via the `predict` subcommand. It requires a config f
 ```
 rn-converage predict config.yaml
 ```
-A minimal configuration file is as below.
+A minimal configuration file is as below. The outputs will be put under `predictions` in this example.
 ```
 model:
   name: rn-coverage
-  ckpt_dir: checkpoints/rn-coverage.pt
 
 trainer:
   devices: 1

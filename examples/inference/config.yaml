@@ -1,6 +1,6 @@
 model:
   name: rn-coverage
-  ckpt_dir: checkpoints/rn-coverage.pt
+  ckpt_dir: ${RN_COV_CKPT}
 
 trainer:
   devices: 1

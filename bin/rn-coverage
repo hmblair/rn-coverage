@@ -10,13 +10,17 @@ elif [[ $1 == "predict" ]]; then
         echo "Usage: rn-coverage predict CONFIG"
         exit 1
     fi
-    PYTHONPATH="$PARENT" python3 -m src predict --config $PARENT/src/config/inference.yaml --config $2
+    TMP=$(mktemp)
+    envsubst < $2 > $TMP
+    PYTHONPATH="$PARENT" python3 -m src predict --config $PARENT/config/inference.yaml --config $TMP
 elif [[ $1 == "train" ]]; then
     if [[ $# -ne 2 ]]; then
         echo "Usage: rn-coverage train CONFIG"
         exit 1
     fi
-    PYTHONPATH="$PARENT" python3 -m src fit --config $PARENT/src/config/training.yaml --config $2
+    TMP=$(mktemp)
+    envsubst < $2 > $TMP
+    PYTHONPATH="$PARENT" python3 -m src fit --config $PARENT/config/training.yaml --config $TMP
 else
     echo "Usage: rn-coverage tokenize|fit|predict"
     exit 1

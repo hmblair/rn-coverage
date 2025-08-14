@@ -18,6 +18,7 @@ mkdir -p checkpoints
 cd checkpoints
 curl -L -o rn-coverage.pt "https://www.dropbox.com/scl/fi/m539j9s7ylzdx95obkryh/RibonanzaNet-Filter.pt?rlkey=t1j2igmo2y1n3912wk7wetql4&st=tofsfmm6&dl=0"
 ```
+You must also set the environment variable `RN_COV_CKPT` to the location of the pre-trained weights.
 
 # Usage
 
@@ -54,4 +55,4 @@ data:
 ```
 The output `predictions/test.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
 
-See `examples/inference` for a MWE (you will need to point the config file to the downloaded checkpoint for it to work.)
+See `examples/inference` for a MWE.

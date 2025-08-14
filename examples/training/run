@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rn-coverage config.yaml

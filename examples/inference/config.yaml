@@ -7,7 +7,7 @@ model:
     pooling:
       type: 'mean'
       dim: -2
-    name: rn-drop
+    name: rn-coverage
     ckpt_dir: checkpoints/rn-coverage.pt
 
 trainer:

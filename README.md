@@ -21,15 +21,37 @@ curl -L -o rn-coverage.pt "https://www.dropbox.com/scl/fi/m539j9s7ylzdx95obkryh/
 
 # Usage
 
-Making predictions with `rn-converage` requires tokenizing the sequences of interest and then calling the model. The former can be done with the command
+## Tokenization
+
+Making predictions with `rn-converage` requires tokenizing the sequences of interest. This can be done with the `tokenize` subcommand, for example
 ```
-rn-converage tokenize examples/data/test.fasta examples/data/test.nc
+rn-converage tokenize test.fasta tokens.nc
 ```
-Both text and FASTA files are accepted. The latter is executed via a config file, which must be pointed to the tokenized sequences (under data.paths.predict).
+Both text and FASTA files are accepted.
+
+## Coverage Prediction
+
+Coverage prediction is done via the `predict` subcommand. It requires a config file as input, where the input tokens and output predictions are specified, as well as the checkpoint location.
+
 ```
-rn-converage examples/config.yaml
+rn-converage predict config.yaml
+```
+A minimal configuration file is as below.
+```
+model:
+  name: rn-coverage
+  ckpt_dir: checkpoints/rn-coverage.pt
+
+trainer:
+  devices: 1
+  callbacks:
+    - path: predictions
+
+data:
+  paths:
+    predict:
+      - data/tokens.nc
 ```
 The output `predictions/test.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
 
-See `examples` for a MWE (you will need to point the config file to the downloaded checkpoint for it to work.)
-
+See `examples/inference` for a MWE (you will need to point the config file to the downloaded checkpoint for it to work.)

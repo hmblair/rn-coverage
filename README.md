@@ -42,7 +42,7 @@ Coverage prediction is done via the `predict` subcommand. It requires a config f
 ```
 rn-converage predict config.yaml
 ```
-A minimal configuration file is as below. The outputs will be put under `predictions` in this example.
+A minimal configuration file is as below. The outputs will be put under `predictions` in this example. If GPUs are available, they will be used automatically, otherwise it will fall back to running on the CPU.
 ```
 model:
   name: rn-coverage

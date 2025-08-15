@@ -11,8 +11,8 @@ elif [[ $1 == "predict" ]]; then
         exit 1
     fi
     TMP=$(mktemp)
-    envsubst < $2 > $TMP
-    PYTHONPATH="$PARENT" python3 -m src predict --config $PARENT/config/inference.yaml --config $TMP
+    envsubst < $PARENT/config/inference.yaml > $TMP
+    PYTHONPATH="$PARENT" python3 -m src predict --config $TMP --config $2
 elif [[ $1 == "train" ]]; then
     if [[ $# -ne 2 ]]; then
         echo "Usage: rn-coverage train CONFIG"

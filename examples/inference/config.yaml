@@ -1,6 +1,5 @@
 model:
   name: rn-coverage
-  ckpt_dir: ${RN_COV_CKPT}
 
 trainer:
   devices: 1

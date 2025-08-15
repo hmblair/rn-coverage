@@ -7,6 +7,7 @@ model:
     pooling:
       type: 'mean'
       dim: -2
+    ckpt_dir: ${RN_COV_CKPT}
 
 trainer:
   precision: 16-mixed

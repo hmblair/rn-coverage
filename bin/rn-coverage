@@ -27,7 +27,7 @@ elif [[ $1 == "finetune" ]]; then
         exit 1
     fi
     TMP=$(mktemp)
-    envsubst < $PARENT/config/finetungin.yaml > $TMP
+    envsubst < $PARENT/config/finetuning.yaml > $TMP
     PYTHONPATH="$PARENT" python3 -m src fit --config $TMP --config $2
 else
     echo "Usage: rn-coverage tokenize|train|finetune|predict"

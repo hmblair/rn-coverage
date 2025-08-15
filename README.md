@@ -4,10 +4,15 @@ Inference for the `rn-coverage` model described in the paper \[WIP\]. Used for f
 
 # Installation
 
-First, clone the repository and install the dependencies.
+First, clone the repository
 ```
 git clone https://github.com/hmblair/rn-coverage
 cd rn-coverage
+```
+and install the dependencies however you want (shown here using a `venv`).
+```
+python3 -m venv ./venv
+source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 Don't forget to add the `./bin` directory to your path.

@@ -19,9 +19,17 @@ elif [[ $1 == "train" ]]; then
         exit 1
     fi
     TMP=$(mktemp)
-    envsubst < $2 > $TMP
-    PYTHONPATH="$PARENT" python3 -m src fit --config $PARENT/config/training.yaml --config $TMP
+    envsubst < $PARENT/config/training.yaml > $TMP
+    PYTHONPATH="$PARENT" python3 -m src fit --config $TMP --config $2
+elif [[ $1 == "finetune" ]]; then
+    if [[ $# -ne 2 ]]; then
+        echo "Usage: rn-coverage finetune CONFIG"
+        exit 1
+    fi
+    TMP=$(mktemp)
+    envsubst < $PARENT/config/finetungin.yaml > $TMP
+    PYTHONPATH="$PARENT" python3 -m src fit --config $TMP --config $2
 else
-    echo "Usage: rn-coverage tokenize|train|predict"
+    echo "Usage: rn-coverage tokenize|train|finetune|predict"
     exit 1
 fi

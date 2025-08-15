@@ -13,7 +13,7 @@ def embed(sequence: str, offset: int = 0) -> np.ndarray:
     return emb
 
 if len(sys.argv) not in [3, 4]:
-    print("Usage: rn-filter tokenize <input_file> <output_file> [offset]")
+    print("Usage: rn-coverage tokenize <input_file> <output_file> [offset]")
     sys.exit(1)
 
 input = sys.argv[1]

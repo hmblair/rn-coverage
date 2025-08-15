@@ -11,6 +11,7 @@ model:
 
 trainer:
   precision: 16-mixed
+  accelerator: gpu
 
 optimizer:
   class_path: torch.optim.AdamW

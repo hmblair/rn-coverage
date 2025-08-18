@@ -57,6 +57,6 @@ data:
     predict:
       - data/tokens.nc
 ```
-The output `predictions/test.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
+The output `predictions/tokens.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
 
 See `examples/inference` for a MWE.

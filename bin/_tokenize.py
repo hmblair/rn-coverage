@@ -8,9 +8,7 @@ RNA_TO_INT = {'A': 0, 'C': 1, 'G': 2, 'U': 3, 'T': 3}
 
 def embed(sequence: str, offset: int = 0) -> np.ndarray:
     emb = np.zeros(len(sequence))
-    for ix, char in enumerate(sequence):
-        emb[ix] = RNA_TO_INT[char] + offset
-    return emb
+
 
 if len(sys.argv) not in [3, 4]:
     print("Usage: rn-coverage tokenize <input_file> <output_file> [offset]")
@@ -24,13 +22,31 @@ if (len(sys.argv) == 4):
 else:
     offset = 0
 
-tokens = []
-with open(input, 'r') as f:
-    for line in tqdm(f):
-        if ">" in line or line.strip() == "":
+with open(input, "r") as f:
+    lines = 0
+    for line in f:
+        line = line.strip()
+        if not line or line.startswith(">"):
             continue
-        tokens.append(embed(line.strip(), offset))
+        lines += 1
 
-tokens = np.stack(tokens, axis=0).astype(np.int64)
+with open(input, "r") as f:
+    line = f.readline().strip()
+    if line.startswith(">"):
+        line = f.readline().strip()
+    length = len(line)
+
+tokens = np.zeros((lines, length), dtype=np.int64)
+
+with open(input, 'r') as f:
+    ix = 0
+    for line in tqdm(f, total=lines):
+        line = line.strip()
+        if not line or line.startswith(">"):
+            continue
+        for jx, char in enumerate(line):
+            tokens[ix, jx] = RNA_TO_INT[char] + offset
+        ix += 1
+
 ds = xr.Dataset({'sequence': (['batch', 'nucleotide'], tokens)})
 ds.to_netcdf(output, engine='h5netcdf')

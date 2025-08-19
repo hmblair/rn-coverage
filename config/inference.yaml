@@ -26,6 +26,5 @@ data:
   init_args:
     target_variables:
       - [[2A3, DMS], target]
-    batch_size: 1
     input_variables:
       - [[sequence], x]

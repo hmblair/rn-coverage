@@ -53,6 +53,7 @@ trainer:
     - path: predictions
 
 data:
+  batch_size: 1
   paths:
     predict:
       - data/tokens.nc

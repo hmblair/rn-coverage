@@ -1,13 +1,12 @@
 # ribonanzanet.py
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import einsum
 import torch.nn.functional as F
 from einops import rearrange
 from typing import Optional
-import os
-import warnings
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -693,7 +692,10 @@ class RibonanzaNet(nn.Module):
         torch.Tensor
             The embeddings of the input tensor. 
         """
-        # get the shape of the input tensor
+
+        if isinstance(src, np.ndarray):
+            src = torch.from_numpy(src)
+
         if src.ndim == 1:
             src = src.unsqueeze(0)
         B, L = src.shape

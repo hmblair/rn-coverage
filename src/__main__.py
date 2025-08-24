@@ -2,7 +2,10 @@ from pytorch_lightning.cli import LightningCLI
 from tqdm import tqdm
 import os
 import torch
-import sys
+
+if not os.path.exists('logs/wandb'):
+    os.makedirs('logs/wandb')
+os.environ['WANDB_PROJECT'] = 'rn-coverage'
 
 PRECISION = "medium"
 torch.set_float32_matmul_precision(PRECISION)

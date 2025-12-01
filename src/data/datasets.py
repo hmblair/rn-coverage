@@ -7,7 +7,11 @@ import numpy as np
 import xarray as xr
 import torch
 from torch.utils.data import Dataset, IterableDataset
-from .constants import NC_EXTENSION
+from .constants import (
+    NC_EXTENSION,
+    DEFAULT_BATCH_DIMENSION,
+    DEFAULT_NETCDF_ENGINE,
+)
 import random
 
 
@@ -205,8 +209,8 @@ class XarrayDataset(Dataset):
     def __init__(
             self: XarrayDataset,
             path: str,
-            batch_dimension: str = 'batch',
-            engine: str = 'h5netcdf',
+            batch_dimension: str = DEFAULT_BATCH_DIMENSION,
+            engine: str = DEFAULT_NETCDF_ENGINE,
     ) -> None:
 
         # verify that the path exists, and points to a netCDF file
@@ -297,8 +301,8 @@ class XarrayIterableDataset(IterableDataset):
             rank: int = 0,
             world_size: int = 1,
             should_shuffle: bool = False,
-            batch_dimension: str = 'batch',
-            engine: str = 'h5netcdf',
+            batch_dimension: str = DEFAULT_BATCH_DIMENSION,
+            engine: str = DEFAULT_NETCDF_ENGINE,
             transforms: list[callable] = [],
     ) -> None:
 

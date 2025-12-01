@@ -1,9 +1,14 @@
-import xarray as xr
-import numpy as np
+import os
 import sys
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import numpy as np
+import xarray as xr
 from tqdm import tqdm
 
-RNA_TO_INT = {'A': 0, 'C': 1, 'G': 2, 'U': 3, 'T': 3}
+from src.data.constants import RNA_TO_INT
 
 
 if len(sys.argv) not in [3, 4]:

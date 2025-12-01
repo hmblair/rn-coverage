@@ -11,7 +11,7 @@ from pytorch_lightning.utilities import rank_zero_warn
 from .datasets import XarrayIterableDataset
 from .utils import get_filename
 import xarray as xr
-from .constants import NC_EXTENSION
+from .constants import NC_EXTENSION, VALID_PHASES
 
 class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
     """
@@ -133,9 +133,9 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         torch.utils.data.DataLoader: 
             The dataloader for the specified phase.
         """
-        if phase not in ['train', 'validate', 'test', 'predict']:
+        if phase not in VALID_PHASES:
             raise ValueError(
-                f'Unknown phase {phase}. Please specify one of "train", "validate", "test", or "predict".'
+                f'Unknown phase {phase}. Must be one of {VALID_PHASES}.'
                 )
         
         if self.data[phase] is None:
@@ -305,12 +305,11 @@ class XarrayDataModule(BarebonesDataModule):
             ) -> None:
         super().__init__(*args, **kwargs)
 
-        # specify the valid phases, and ensure the provided paths are valid
-        VALID_PHASES = ['train', 'validate', 'test', 'predict']
+        # ensure the provided paths are valid
         for phase in paths.keys():
             if phase not in VALID_PHASES:
                 raise ValueError(
-                    f'Invalid phase {phase}. The phase must be one of {VALID_PHASES}.'
+                    f'Invalid phase {phase}. Must be one of {VALID_PHASES}.'
                     )
 
         # store the variables
@@ -406,9 +405,9 @@ class XarrayDataModule(BarebonesDataModule):
         torch.utils.data.DataLoader: 
             The dataloader for the specified phase.
         """        
-        if phase not in ['train', 'validate', 'test', 'predict']:
+        if phase not in VALID_PHASES:
             raise ValueError(
-                f'Unknown phase {phase}. Please specify one of "train", "val", "test", or "predict".'
+                f'Unknown phase {phase}. Must be one of {VALID_PHASES}.'
                 )
 
         if self.data[phase] is not None:

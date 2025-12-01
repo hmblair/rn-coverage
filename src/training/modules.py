@@ -306,7 +306,7 @@ def strip_checkpoint(path: str) -> None:
     path (str):
         The path to the checkpoint file.
     """
-    checkpoint = torch.load(path)
+    checkpoint = torch.load(path, weights_only=True)
     state_dict = checkpoint['state_dict']
     if 'model' not in state_dict:
         raise ValueError('The state dict must contain a key "model".')
@@ -376,6 +376,7 @@ class FinetuningModuleDenseHead(PipelineModule):
             state_dict = torch.load(
                 ckpt_dir,
                 map_location=torch.device('cpu'),
+                weights_only=True,
             )
             self.load_state_dict(state_dict)
         # Freeze the model

@@ -10,15 +10,15 @@ if len(sys.argv) not in [3, 4]:
     print("Usage: rn-coverage tokenize <input_file> <output_file> [offset]")
     sys.exit(1)
 
-input = sys.argv[1]
-output = sys.argv[2]
+input_path = sys.argv[1]
+output_path = sys.argv[2]
 
-if (len(sys.argv) == 4):
+if len(sys.argv) == 4:
     offset = int(sys.argv[3])
 else:
     offset = 0
 
-with open(input, "r") as f:
+with open(input_path, "r") as f:
     lines = 0
     for line in f:
         line = line.strip()
@@ -26,7 +26,7 @@ with open(input, "r") as f:
             continue
         lines += 1
 
-with open(input, "r") as f:
+with open(input_path, "r") as f:
     line = f.readline().strip()
     if line.startswith(">"):
         line = f.readline().strip()
@@ -34,7 +34,7 @@ with open(input, "r") as f:
 
 tokens = np.zeros((lines, length), dtype=np.int64)
 
-with open(input, 'r') as f:
+with open(input_path, 'r') as f:
     ix = 0
     for line in tqdm(f, total=lines):
         line = line.strip()
@@ -45,4 +45,4 @@ with open(input, 'r') as f:
         ix += 1
 
 ds = xr.Dataset({'sequence': (['batch', 'nucleotide'], tokens)})
-ds.to_netcdf(output, engine='h5netcdf')
+ds.to_netcdf(output_path, engine='h5netcdf')

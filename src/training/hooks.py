@@ -1,9 +1,12 @@
 # hooks.py
 
+from abc import ABCMeta, abstractmethod
+from typing import Any, Callable, Optional
+
 import torch
 import torch.nn as nn
-from typing import Any, Callable, Optional
 from pytorch_lightning.utilities import rank_zero_warn
+
 
 class HookList(list):
     """
@@ -62,14 +65,13 @@ def patch_and_register_layer_hooks(
         can be used to remove the hooks later, via the remove_hooks() method.
     """
     handles = []
-    for m in model.modules():
-        if isinstance(m, layer_type):
-            if transform is not None:
-                m  = transform(m)
+    for module in model.modules():
+        if isinstance(module, layer_type):
+            target = transform(module) if transform is not None else module
             if patch is not None:
-                patch(m)
+                patch(target)
             handles.append(
-                m.register_forward_hook(hook)
+                target.register_forward_hook(hook)
                 )
     if not handles:
         rank_zero_warn(
@@ -78,8 +80,6 @@ def patch_and_register_layer_hooks(
     return HookList(handles)
 
 
-
-from abc import ABCMeta, abstractmethod
 class HookContextManager(metaclass=ABCMeta):
     """
     A context manager for registering a hook on a model. This class is abstract

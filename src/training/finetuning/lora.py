@@ -3,6 +3,7 @@
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import BaseFinetuning
 from pytorch_lightning.utilities import rank_zero_info
 from pytorch_lightning.utilities.model_summary import summarize
 
@@ -157,11 +158,9 @@ def wrap_with_lora(
             setattr(module, name, wrapped)
         else:
             # Recursively replace in child modules
-            wrap_with_lora(child, lora_rank, frozen)   
+            wrap_with_lora(child, lora_rank, frozen)
 
 
-
-from pytorch_lightning.callbacks import BaseFinetuning
 class LoRACallback(BaseFinetuning):
     def __init__(
             self, 

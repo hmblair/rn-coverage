@@ -316,27 +316,3 @@ def get_attn_layer(model : type[nn.Module]) -> nn.Module:
         the self-attention module of the model is returned.
     """
     return model if isinstance(model, nn.MultiheadAttention) else model.self_attn
-
-
-
-# def plot_attention_weights(
-#         model : nn.Module,
-#         x : torch.Tensor,
-#         attn_layer_type : type[nn.Module] = nn.MultiheadAttention,
-#         ) -> None:
-#     """
-#     Plot the attention weights of the given model when the given input is passed
-#     through the model.
-
-#     Parameters:
-#     ----------
-#     model (nn.Module):
-#         The model to plot the attention weights of.
-#     x (torch.Tensor):
-#         The input to the model.
-#     attn_layer_type (type[nn.Module]):
-#         The type of attention layer to plot the attention weights of.
-#     """
-#     with AttentionWeightsHook(model, attn_layer_type) as hook:
-#        attn_weights = hook.attn_weights(x).squeeze()
-#     image_grid(attn_weights.numpy())

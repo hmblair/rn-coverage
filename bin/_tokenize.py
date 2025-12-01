@@ -6,10 +6,6 @@ from tqdm import tqdm
 RNA_TO_INT = {'A': 0, 'C': 1, 'G': 2, 'U': 3, 'T': 3}
 
 
-def embed(sequence: str, offset: int = 0) -> np.ndarray:
-    emb = np.zeros(len(sequence))
-
-
 if len(sys.argv) not in [3, 4]:
     print("Usage: rn-coverage tokenize <input_file> <output_file> [offset]")
     sys.exit(1)

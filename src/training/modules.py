@@ -8,6 +8,12 @@ import pytorch_lightning as pl
 from .hooks import HookList, patch_and_register_layer_hooks
 from ..models.dense import DenseNetwork
 
+__all__ = [
+    'PipelineModule',
+    'FinetuningModuleDenseHead',
+    'strip_checkpoint',
+]
+
 
 class PipelineModule(pl.LightningModule):
     """

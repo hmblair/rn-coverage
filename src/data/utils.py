@@ -3,6 +3,36 @@
 import torch
 import xarray as xr
 from pathlib import Path
+from typing import Sequence
+
+
+def validate_equal_lengths(
+        sequences: Sequence,
+        error_msg: str | None = None,
+) -> None:
+    """
+    Validate that all sequences in a collection have the same length.
+
+    Parameters
+    ----------
+    sequences : Sequence
+        A collection of sequences (lists, tensors, arrays) to validate.
+    error_msg : str, optional
+        Custom error message. If not provided, a default message is used.
+
+    Raises
+    ------
+    ValueError
+        If the sequences have different lengths.
+    """
+    if not sequences:
+        return
+    first_len = len(sequences[0])
+    if not all(len(seq) == first_len for seq in sequences):
+        raise ValueError(
+            error_msg or 'All sequences must have the same length.'
+        )
+
 
 def get_worker_info() -> tuple[int, int]:
     """

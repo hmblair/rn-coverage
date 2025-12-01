@@ -7,21 +7,16 @@ class WarmupAndDecayLRScheduler(_LRScheduler, metaclass=ABCMeta):
     """
     A base class for learning rate schedulers that incorporate warm-up and decay steps.
 
-    Args:
-        warmup_steps (int): The number of warm-up steps.
-        *args: Additional positional arguments to be passed to the parent class.
-        **kwargs: Additional keyword arguments to be passed to the parent class.
-    
-    Attributes:
-        warmup_steps (int): The number of warm-up steps.
-
-    Inherits:
-        LRScheduler: Base class for learning rate schedulers.
-
-    Methods:
-        _warmup_step(): Calculates a warm-up step for the learning rate scheduler. An abstract method that must be implemented by subclasses.
-        _decay_step(): Calculates a decay step for the learning rate scheduler. An abstract method that must be implemented by subclasses.
-        get_lr(): Get the learning rate for the current epoch (or step).
+    Parameters
+    ----------
+    optimizer : torch.optim.Optimizer
+        The optimizer to schedule.
+    warmup_epochs : int
+        The number of warm-up epochs.
+    *args
+        Additional positional arguments for _LRScheduler.
+    **kwargs
+        Additional keyword arguments for _LRScheduler.
     """
     def __init__(self, optimizer, warmup_epochs, *args, **kwargs) -> None:
         self.warmup_epochs = warmup_epochs
@@ -35,8 +30,10 @@ class WarmupAndDecayLRScheduler(_LRScheduler, metaclass=ABCMeta):
         If the current epoch is less than the warm-up steps, the learning rate is calculated using the warm-up step function.
         Otherwise, the learning rate is calculated using the decay step function.
 
-        Returns:
-            list[float]: The learning rates for each parameter group.
+        Returns
+        -------
+        list[float]
+            The learning rates for each parameter group.
         """
         if self.last_epoch < 0:
             # Initial epoch: return current learning rates

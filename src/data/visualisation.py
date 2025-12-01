@@ -3,19 +3,19 @@
 from typing import Sequence
 
 def print_colored_string(
-        string : str, 
-        floats : Sequence[int], 
+        string: str,
+        floats: Sequence[float],
         ) -> None:
     """
     Print a string with each character colored according to the intensity of
     the corresponding float in floats. The color of each character is
     interpolated between red (255,0,0) and white (255,255,255).
 
-    Parameters:
+    Parameters
     ----------
-    string (str):
+    string : str
         The string to print.
-    floats (Sequence[int]):
+    floats : Sequence[float]
         The floats to use to color the string.
     """
     if not len(string) == len(floats):

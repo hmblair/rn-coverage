@@ -10,32 +10,27 @@ from pytorch_lightning.utilities.model_summary import summarize
 class LoRALayerWrapper(nn.Linear):
     """
     A wrapper class for nn.Linear modules which adds a LoRA perturbation to the
-    output of the base module. By replacing the base module with this wrapper, 
+    output of the base module. By replacing the base module with this wrapper,
     a single LoRA layer can be added to a pre-trained model.
 
-    Parameters:
-    -----------
-    base_module (nn.Module): 
+    Parameters
+    ----------
+    base_module : nn.Module
         The base module to be wrapped.
-    lora_rank (int): 
+    lora_rank : int
         The rank of the LoRA layer.
-    frozen (bool):
-        Whether the LoRA parameters should be frozen. If True, the LoRA 
+    frozen : bool
+        Whether the LoRA parameters should be frozen. If True, the LoRA
         parameters will be initialised as untrainable.
 
-    Attributes:
-    -----------
-    base_module (nn.Linear): 
+    Attributes
+    ----------
+    base_module : nn.Linear
         The base module being wrapped. It should be an instance of nn.Linear.
-    lora_A (nn.Parameter): 
+    lora_A : nn.Parameter
         LoRA weight A.
-    lora_B (nn.Parameter): 
+    lora_B : nn.Parameter
         LoRA weight B.
-
-    Inherits:
-    ---------
-    nn.Linear: 
-        Pytorch linear layer base class.
     """
     def __init__(
             self, 
@@ -76,11 +71,15 @@ class LoRALayerWrapper(nn.Linear):
         """
         Forward pass of the LoRALayerWrapper.
 
-        Args:
-            x (torch.Tensor): The input tensor.
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
 
-        Returns:
-            torch.Tensor: The output tensor after applying the base module and 
+        Returns
+        -------
+        torch.Tensor
+            The output tensor after applying the base module and
             adding on the LoRA perturbation.
         """
         return super().forward(x) + (x @ self.lora_A.T) @ self.lora_B.T
@@ -144,11 +143,11 @@ def wrap_with_lora(
     The LoRA weights are initialised as untrainable, and should be unfrozen 
     manually when fine-tuning.
 
-    Parameters:
-    -----------
-    module (nn.Module): 
+    Parameters
+    ----------
+    module : nn.Module
         The base module to be wrapped.
-    lora_rank (int): 
+    lora_rank : int
         The rank of the LoRA layer.
     """
     for name, child in module.named_children():
@@ -179,9 +178,9 @@ class LoRACallback(BaseFinetuning):
         Wraps the pre-trained model with LoRA layers, which are initialised as
         untrainable.
 
-        Parameters:
-        -----------
-        pl_module (pl.LightningModule):
+        Parameters
+        ----------
+        pl_module : pl.LightningModule
             The LightningModule to be fine-tuned.
         """
         if hasattr(pl_module, self.pt_model):
@@ -205,13 +204,13 @@ class LoRACallback(BaseFinetuning):
         """
         Unfreezes the LoRA parameters at the specified epoch.
 
-        Parameters:
-        -----------
-        pl_module (pl.LightningModule):
+        Parameters
+        ----------
+        pl_module : pl.LightningModule
             The LightningModule to be fine-tuned.
-        epoch (int):
+        epoch : int
             The current epoch.
-        optimizer (torch.optim.Optimizer):
+        optimizer : torch.optim.Optimizer
             The optimizer being used to train the model.
         """
         if epoch == self.unfreeze_epoch:

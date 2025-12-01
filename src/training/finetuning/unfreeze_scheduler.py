@@ -12,13 +12,13 @@ class FineTuningScheduler(BaseFinetuning):
     In order to use this scheduler, the pretrained model must implement the
     __getitem__ method, so that the layers can be accessed by index.
 
-    Parameters:
+    Parameters
     ----------
-    layers_to_unfreeze (list[int]):
+    layers_to_unfreeze : list[int]
         The layers to unfreeze.
-    unfreeze_rate (int):
+    unfreeze_rate : int
         The rate at which layers are unfrozen.
-    pt_model (str):
+    pt_model : str
         The name of the pretrained model in the LightningModule. Defaults to
         "model".
     """

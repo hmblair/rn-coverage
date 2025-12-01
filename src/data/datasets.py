@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import os
-from typing import Union, Sequence, Iterable
+from typing import Callable, Union, Sequence, Iterable
 import numpy as np
 import xarray as xr
 import torch
@@ -298,7 +298,7 @@ class XarrayIterableDataset(IterableDataset):
             should_shuffle: bool = False,
             batch_dimension: str = DEFAULT_BATCH_DIMENSION,
             engine: str = DEFAULT_NETCDF_ENGINE,
-            transforms: list[callable] = [],
+            transforms: list[Callable] = [],
     ) -> None:
 
         # verify that at least one path is specified

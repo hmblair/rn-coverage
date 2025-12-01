@@ -86,14 +86,33 @@ class LoRALayerWrapper(nn.Linear):
 
 
 
-def get_lora_params(module : nn.Module, get_names : bool = False):
+def get_lora_params(
+        module: nn.Module,
+        include_names: bool = False,
+) -> list:
+    """
+    Retrieve all LoRA parameters from a module.
+
+    Parameters
+    ----------
+    module : nn.Module
+        The module to search for LoRA layers.
+    include_names : bool
+        If True, return tuples of (name, lora_A, lora_B).
+        If False, return only the parameters. Defaults to False.
+
+    Returns
+    -------
+    list
+        List of LoRA parameters or (name, param_A, param_B) tuples.
+    """
     lora_params = []
-    for name, module in module.named_modules():
-        if isinstance(module, LoRALayerWrapper):
-            if get_names:
-                lora_params += (name, module.lora_A, module.lora_B)
+    for name, child in module.named_modules():
+        if isinstance(child, LoRALayerWrapper):
+            if include_names:
+                lora_params.append((name, child.lora_A, child.lora_B))
             else:
-                lora_params += [module.lora_A, module.lora_B]
+                lora_params.extend([child.lora_A, child.lora_B])
     return lora_params
 
 

@@ -67,12 +67,12 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         try:
             rank = self.trainer.global_rank
             world_size = self.trainer.world_size
-        except Exception:
+        except (AttributeError, RuntimeError):
             warnings.warn(
                 message = 'No trainer object found. Setting rank to 0 and world' \
                     ' size to 1. To use distributed training, please pass this' \
-                    ' DataModule to a trainer object.', 
-                category = UserWarning, 
+                    ' DataModule to a trainer object.',
+                category = UserWarning,
                 stacklevel = 2
                 )
             rank = 0

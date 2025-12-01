@@ -343,13 +343,17 @@ class FinetuningModuleDenseHead(PipelineModule):
             self,
             out_size: int,
             embedding_dim: Optional[int] = None,
-            hidden_sizes: list[int] = [],
+            hidden_sizes: Optional[list[int]] = None,
             dropout: float = 0.0,
             pooling: Optional[dict] = None,
             ckpt_dir: str | None = None,
             *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
+
+        # Handle mutable default argument
+        if hidden_sizes is None:
+            hidden_sizes = []
 
         # get the embedding dimension
         if embedding_dim is None:

@@ -38,8 +38,9 @@ class WarmupAndDecayLRScheduler(_LRScheduler, metaclass=ABCMeta):
         Returns:
             list[float]: The learning rates for each parameter group.
         """
-        if self.last_epoch == -1:
-            pass
+        if self.last_epoch < 0:
+            # Initial epoch: return current learning rates
+            return [group['lr'] for group in self.optimizer.param_groups]
         elif self.last_epoch < self.warmup_epochs:
             return self._warmup_step()
         else:

@@ -101,11 +101,11 @@ class SimpleIterableDataset(IterableDataset):
         Return an iterator over the dataset.
         """
         while True:
-            for slice in self.slices:
-                yield tuple(array[slice] for array in self.data)
+            for batch_slice in self.slices:
+                yield tuple(array[batch_slice] for array in self.data)
             if self.should_shuffle:
                 ix = torch.randperm(len(self.data[0]))
-                self.tensors = tuple(array[ix] for array in self.data)
+                self.data = tuple(array[ix] for array in self.data)
 
     def __len__(self) -> int:
         """

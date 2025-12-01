@@ -9,3 +9,6 @@ h5netcdf
 torchmetrics
 einops
 pyyaml
+tqdm
+wandb
+pytest

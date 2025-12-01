@@ -48,8 +48,9 @@ class FineTuningScheduler(BaseFinetuning):
         if self.unfreeze_rate == 0:
             return
         try:
-            getattr(pl_module, self.pt_model).requires_grad_(False)
-            getattr(pl_module, self.pt_model).eval()
+            pt_model = getattr(pl_module, self.pt_model)
+            pt_model.requires_grad_(False)
+            pt_model.eval()
         except AttributeError as e:
             raise AttributeError(
                 f'Cannot find {self.pt_model} in the LightningModule.'
@@ -69,10 +70,8 @@ class FineTuningScheduler(BaseFinetuning):
         dictionary. The model is then summarized on rank 0.
         """
         if epoch in self._unfreeze_dict:
-            getattr(pl_module, self.pt_model)[
-                self._unfreeze_dict[epoch]
-            ].requires_grad_(True)
-            getattr(pl_module, self.pt_model)[
-                self._unfreeze_dict[epoch]
-            ].train()
+            layer_idx = self._unfreeze_dict[epoch]
+            layer = getattr(pl_module, self.pt_model)[layer_idx]
+            layer.requires_grad_(True)
+            layer.train()
             rank_zero_info(summarize(pl_module))

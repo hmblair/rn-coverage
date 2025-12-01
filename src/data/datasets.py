@@ -12,6 +12,7 @@ from .constants import (
     DEFAULT_BATCH_DIMENSION,
     DEFAULT_NETCDF_ENGINE,
 )
+from .utils import validate_equal_lengths
 import random
 
 
@@ -27,10 +28,7 @@ class SimpleDataset(Dataset):
 
     def __init__(self, data: Sequence) -> None:
         super().__init__()
-        if not all(len(array) == len(data[0]) for array in data):
-            raise ValueError(
-                'All tensors must have the same length.'
-            )
+        validate_equal_lengths(data, 'All tensors must have the same length.')
         self.data = data
 
     def __len__(self) -> int:
@@ -87,10 +85,7 @@ class SimpleIterableDataset(IterableDataset):
             should_shuffle: bool = True,
     ) -> None:
         super().__init__()
-        if not all(len(array) == len(data[0]) for array in data):
-            raise ValueError(
-                'All tensors must have the same length.'
-            )
+        validate_equal_lengths(data, 'All tensors must have the same length.')
         self.data = data
         self.batch_size = batch_size
         self.slices = [

@@ -23,25 +23,24 @@ if len(sys.argv) == 4:
 else:
     offset = 0
 
+# First pass: count sequences and determine sequence length
+num_sequences = 0
+seq_length = None
 with open(input_path, "r") as f:
-    lines = 0
     for line in f:
         line = line.strip()
         if not line or line.startswith(">"):
             continue
-        lines += 1
+        num_sequences += 1
+        if seq_length is None:
+            seq_length = len(line)
 
-with open(input_path, "r") as f:
-    line = f.readline().strip()
-    if line.startswith(">"):
-        line = f.readline().strip()
-    length = len(line)
+tokens = np.zeros((num_sequences, seq_length), dtype=np.int64)
 
-tokens = np.zeros((lines, length), dtype=np.int64)
-
+# Second pass: tokenize sequences
 with open(input_path, 'r') as f:
     ix = 0
-    for line in tqdm(f, total=lines):
+    for line in tqdm(f, total=num_sequences):
         line = line.strip()
         if not line or line.startswith(">"):
             continue

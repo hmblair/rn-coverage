@@ -61,3 +61,38 @@ data:
 The output `predictions/tokens.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
 
 See `examples/inference` for a MWE.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RN_COV_CKPT` | (required) | Path to the pre-trained model checkpoint |
+| `WANDB_DIR` | `logs/wandb` | Directory for Weights & Biases logs |
+| `WANDB_PROJECT` | `rn-coverage` | Weights & Biases project name |
+| `TORCH_MATMUL_PRECISION` | `medium` | PyTorch matrix multiplication precision |
+
+# Development
+
+## Running Tests
+
+```
+pytest tests/ -v
+```
+
+## Project Structure
+
+```
+src/
+├── data/           # Data loading and preprocessing
+│   ├── constants.py    # Shared constants (tokenization, defaults)
+│   ├── datasets.py     # Dataset classes
+│   ├── datamodules.py  # PyTorch Lightning data modules
+│   └── utils.py        # Utility functions
+├── training/       # Training and inference
+│   ├── modules.py      # Lightning modules
+│   ├── hooks.py        # Training hooks
+│   ├── finetuning/     # LoRA and layer unfreezing
+│   └── optimisation/   # Loss functions and LR schedulers
+├── ribonanzanet.py # RibonanzaNet model (external)
+└── __main__.py     # CLI entry point
+```

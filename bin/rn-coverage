@@ -29,7 +29,9 @@ elif [[ $1 == "finetune" ]]; then
     TMP=$(mktemp)
     envsubst < $PARENT/config/finetuning.yaml > $TMP
     PYTHONPATH="$PARENT" python3 -m src fit --config $TMP --config $2
+elif [[ $1 == "extract" ]]; then
+    PYTHONPATH="$PARENT" python3 "$DIR/_extract.py" ${@:2}
 else
-    echo "Usage: rn-coverage tokenize|train|finetune|predict"
+    echo "Usage: rn-coverage tokenize|train|finetune|predict|extract"
     exit 1
 fi

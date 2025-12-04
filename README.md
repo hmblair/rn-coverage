@@ -17,13 +17,7 @@ pip3 install -r requirements.txt
 ```
 Don't forget to add the `./bin` directory to your path.
 
-Then, the checkpoint must be downloaded.
-```
-mkdir -p checkpoints
-cd checkpoints
-curl -L -o rn-coverage.pt "https://www.dropbox.com/scl/fi/m539j9s7ylzdx95obkryh/RibonanzaNet-Filter.pt?rlkey=t1j2igmo2y1n3912wk7wetql4&st=tofsfmm6&dl=0"
-```
-You must also set the environment variable `RN_COV_CKPT` to the location of the pre-trained weights.
+The model checkpoint will be downloaded automatically on first run to `~/.cache/rn-coverage/`. Alternatively, set `RN_COV_CKPT` to use a manually downloaded checkpoint.
 
 # Usage
 
@@ -66,7 +60,7 @@ See `examples/inference` for a MWE.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `RN_COV_CKPT` | (required) | Path to the pre-trained model checkpoint |
+| `RN_COV_CKPT` | `~/.cache/rn-coverage/rn-coverage.pt` | Path to the pre-trained model checkpoint |
 | `WANDB_DIR` | `logs/wandb` | Directory for Weights & Biases logs |
 | `WANDB_PROJECT` | `rn-coverage` | Weights & Biases project name |
 | `TORCH_MATMUL_PRECISION` | `medium` | PyTorch matrix multiplication precision |

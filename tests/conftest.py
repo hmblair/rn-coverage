@@ -2,7 +2,7 @@ import pytest
 import torch
 import numpy as np
 import tempfile
-import xarray as xr
+import h5py
 
 
 @pytest.fixture
@@ -25,18 +25,15 @@ def sample_tensors():
 
 
 @pytest.fixture
-def temp_netcdf_file():
-    """Create a temporary netCDF file for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.nc', delete=False) as f:
+def temp_hdf5_file():
+    """Create a temporary HDF5 file for testing."""
+    with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as f:
         path = f.name
 
     # Create sample data
-    data = {
-        'sequence': (['batch', 'nucleotide'], np.random.randint(0, 4, (10, 50))),
-        'target': (['batch', 'nucleotide'], np.random.randn(10, 50)),
-    }
-    ds = xr.Dataset(data)
-    ds.to_netcdf(path, engine='h5netcdf')
+    with h5py.File(path, 'w') as f:
+        f.create_dataset('sequence', data=np.random.randint(0, 4, (10, 50)))
+        f.create_dataset('target', data=np.random.randn(10, 50))
 
     yield path
 

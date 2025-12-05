@@ -2,6 +2,7 @@ import pytest
 import torch
 import sys
 import os
+import h5py
 
 # Add src to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,8 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.data.datasets import (
     SimpleDataset,
     SimpleIterableDataset,
-    XarrayDataset,
-    stack_xarray,
+    HDF5Dataset,
+    stack_hdf5,
     get_idx_distributed,
 )
 
@@ -117,37 +118,37 @@ class TestSimpleIterableDataset:
             "Shuffle bug: data order is identical across epochs"
 
 
-class TestXarrayDataset:
-    """Tests for XarrayDataset."""
+class TestHDF5Dataset:
+    """Tests for HDF5Dataset."""
 
-    def test_init_with_valid_file(self, temp_netcdf_file):
-        """Test initialization with valid netCDF file."""
-        dataset = XarrayDataset(temp_netcdf_file)
+    def test_init_with_valid_file(self, temp_hdf5_file):
+        """Test initialization with valid HDF5 file."""
+        dataset = HDF5Dataset(temp_hdf5_file)
         assert len(dataset) == 10
 
     def test_init_with_nonexistent_file(self):
         """Test that nonexistent file raises ValueError."""
         with pytest.raises(ValueError, match="does not exist"):
-            XarrayDataset("/nonexistent/path.nc")
+            HDF5Dataset("/nonexistent/path.h5")
 
     def test_init_with_wrong_extension(self, tmp_path):
-        """Test that non-.nc file raises ValueError."""
+        """Test that non-.h5 file raises ValueError."""
         wrong_file = tmp_path / "test.txt"
         wrong_file.touch()
-        with pytest.raises(ValueError, match="netCDF"):
-            XarrayDataset(str(wrong_file))
+        with pytest.raises(ValueError, match="HDF5"):
+            HDF5Dataset(str(wrong_file))
 
-    def test_getitem(self, temp_netcdf_file):
+    def test_getitem(self, temp_hdf5_file):
         """Test indexing the dataset."""
-        dataset = XarrayDataset(temp_netcdf_file)
+        dataset = HDF5Dataset(temp_hdf5_file)
         item = dataset[0]
         assert 'sequence' in item
         assert 'target' in item
 
-    def test_shuffle(self, temp_netcdf_file):
+    def test_shuffle(self, temp_hdf5_file):
         """Test shuffling the dataset."""
-        dataset = XarrayDataset(temp_netcdf_file)
-        original_first = dataset[0]['sequence'].values.copy()
+        dataset = HDF5Dataset(temp_hdf5_file)
+        original_first = dataset[0]['sequence'].copy()
         dataset.shuffle()
         # After shuffle, data should be reordered
         # (not guaranteed to be different at index 0, but dataset order changes)
@@ -159,7 +160,7 @@ class TestGetIdxDistributed:
 
     def test_single_device(self):
         """Test with single device (no distribution)."""
-        num_datapoints = {'file1.nc': 100, 'file2.nc': 50}
+        num_datapoints = {'file1.h5': 100, 'file2.h5': 50}
         idx = get_idx_distributed(num_datapoints, batch_size=10, rank=0, world_size=1)
 
         # Should have 15 batches total (10 + 5)
@@ -169,7 +170,7 @@ class TestGetIdxDistributed:
 
     def test_multi_device_distribution(self):
         """Test that work is distributed across devices."""
-        num_datapoints = {'file1.nc': 100}
+        num_datapoints = {'file1.h5': 100}
         idx_rank0 = get_idx_distributed(num_datapoints, batch_size=10, rank=0, world_size=2)
         idx_rank1 = get_idx_distributed(num_datapoints, batch_size=10, rank=1, world_size=2)
 
@@ -183,31 +184,31 @@ class TestGetIdxDistributed:
             assert s0 != s1
 
 
-class TestStackXarray:
-    """Tests for stack_xarray helper function."""
+class TestStackHDF5:
+    """Tests for stack_hdf5 helper function."""
 
-    def test_stack_single_variable(self, temp_netcdf_file):
+    def test_stack_single_variable(self, temp_hdf5_file):
         """Test stacking a single variable."""
-        import xarray as xr
-        ds = xr.load_dataset(temp_netcdf_file)
+        with h5py.File(temp_hdf5_file, 'r') as f:
+            data = {name: f[name][:] for name in f.keys()}
 
-        result = stack_xarray(ds, ['sequence'])
+        result = stack_hdf5(data, ['sequence'])
         assert result is not None
         assert result.shape == (10, 50)
 
-    def test_stack_multiple_variables(self, temp_netcdf_file):
+    def test_stack_multiple_variables(self, temp_hdf5_file):
         """Test stacking multiple variables."""
-        import xarray as xr
-        ds = xr.load_dataset(temp_netcdf_file)
+        with h5py.File(temp_hdf5_file, 'r') as f:
+            data = {name: f[name][:] for name in f.keys()}
 
-        result = stack_xarray(ds, ['sequence', 'target'])
+        result = stack_hdf5(data, ['sequence', 'target'])
         assert result is not None
         assert result.shape == (10, 50, 2)
 
-    def test_stack_empty_list(self, temp_netcdf_file):
+    def test_stack_empty_list(self, temp_hdf5_file):
         """Test stacking empty variable list returns None."""
-        import xarray as xr
-        ds = xr.load_dataset(temp_netcdf_file)
+        with h5py.File(temp_hdf5_file, 'r') as f:
+            data = {name: f[name][:] for name in f.keys()}
 
-        result = stack_xarray(ds, [])
+        result = stack_hdf5(data, [])
         assert result is None

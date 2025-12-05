@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rn-coverage tokenize data/test.fasta data/test.nc
+rn-coverage tokenize data/test.fasta data/test.h5
 rn-coverage predict config.yaml

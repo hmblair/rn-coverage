@@ -10,4 +10,4 @@ data:
   batch_size: 1
   paths:
     predict:
-      - data/test.nc
+      - data/test.h5

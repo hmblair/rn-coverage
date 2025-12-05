@@ -1,10 +1,9 @@
 # constants.py
 
-NC_EXTENSION = '.nc'
+H5_EXTENSION = '.h5'
 
-# Defaults for xarray/netCDF handling
+# Default batch dimension name for HDF5 datasets
 DEFAULT_BATCH_DIMENSION = 'batch'
-DEFAULT_NETCDF_ENGINE = 'h5netcdf'
 
 # RNA/DNA tokenization mapping
 # Maps nucleotide characters to integer indices for model input

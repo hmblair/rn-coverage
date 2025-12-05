@@ -4,8 +4,7 @@ numpy
 torch
 pytorch-lightning
 jsonargparse[signatures]>=4.27.7
-xarray
-h5netcdf
+h5py
 torchmetrics
 einops
 pyyaml

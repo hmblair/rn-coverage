@@ -1,7 +1,6 @@
 # utils.py
 
 import torch
-import xarray as xr
 from pathlib import Path
 from typing import Sequence
 
@@ -66,17 +65,6 @@ def get_device_info() -> tuple[int, int]:
         device_id = 0
         num_devices = 1
     return device_id, num_devices
-
-
-
-def xarray_to_dict(ds: xr.Dataset) -> dict[str, torch.Tensor]:
-    """
-    Convert an xarray dataset to a dictionary of tensors.
-    """
-    return {
-        name : torch.Tensor(ds[name].values)
-        for name in ds.data_vars
-        }
 
 
 

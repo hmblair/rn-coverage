@@ -25,7 +25,7 @@ The model checkpoint will be downloaded automatically on first run to `~/.cache/
 
 Making predictions with `rn-converage` requires tokenizing the sequences of interest. This can be done with the `tokenize` subcommand, for example
 ```
-rn-converage tokenize test.fasta tokens.nc
+rn-converage tokenize test.fasta tokens.h5
 ```
 Both text and FASTA files are accepted.
 
@@ -50,9 +50,9 @@ data:
   batch_size: 1
   paths:
     predict:
-      - data/tokens.nc
+      - data/tokens.h5
 ```
-The output `predictions/tokens.nc` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.nc` file can be opened with `xarray`.
+The output `predictions/tokens.h5` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.h5` file can be opened with `h5py`.
 
 See `examples/inference` for a MWE.
 

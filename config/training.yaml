@@ -19,7 +19,7 @@ lr_scheduler:
   class_path: src.training.optimisation.lr_schedulers.LinearWarmupAndInverseSqrtDecayLR
 
 data:
-  class_path: src.data.datamodules.XarrayDataModule
+  class_path: src.data.datamodules.HDF5DataModule
   init_args:
     target_variables:
       - [[2A3, DMS], target]

@@ -13,16 +13,13 @@ trainer:
   precision: 16-mixed
   accelerator: gpu
   callbacks:
-    - class_path: src.data.writing.netCDFDistributedPredictionWriter
+    - class_path: src.data.writing.HDF5PredictionWriter
       init_args:
         variable_name: reads
-        dimension_names:
-          - batch
-          - experiment_type
         write_interval: batch
 
 data:
-  class_path: src.data.datamodules.XarrayDataModule
+  class_path: src.data.datamodules.HDF5DataModule
   init_args:
     target_variables:
       - [[2A3, DMS], target]

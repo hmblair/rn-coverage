@@ -5,14 +5,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-import xarray as xr
+import h5py
 from tqdm import tqdm
 
 from src.data.constants import RNA_TO_INT
 
 
 if len(sys.argv) not in [3, 4]:
-    print("Usage: rn-coverage tokenize <input_file> <output_file> [offset]")
+    print("Usage: rn-coverage tokenize <input_file> <output.h5> [offset]")
     sys.exit(1)
 
 input_path = sys.argv[1]
@@ -48,5 +48,5 @@ with open(input_path, 'r') as f:
             tokens[ix, jx] = RNA_TO_INT[char] + offset
         ix += 1
 
-ds = xr.Dataset({'sequence': (['batch', 'nucleotide'], tokens)})
-ds.to_netcdf(output_path, engine='h5netcdf')
+with h5py.File(output_path, 'w') as f:
+    f.create_dataset('sequence', data=tokens)

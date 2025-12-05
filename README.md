@@ -23,38 +23,44 @@ The model checkpoint will be downloaded automatically on first run to `~/.cache/
 
 ## Tokenization
 
-Making predictions with `rn-converage` requires tokenizing the sequences of interest. This can be done with the `tokenize` subcommand, for example
+Making predictions with `rn-coverage` requires tokenizing the sequences of interest. This can be done with the `tokenize` subcommand, for example
 ```
-rn-converage tokenize test.fasta tokens.h5
+rn-coverage tokenize test.fasta tokens.h5
 ```
 Both text and FASTA files are accepted.
 
 ## Coverage Prediction
 
-Coverage prediction is done via the `predict` subcommand. It requires a config file as input, where the input tokens and output predictions are specified, as well as the checkpoint location.
+Coverage prediction is done via the `predict` subcommand. The simplest usage is:
+```
+rn-coverage predict tokens.h5
+```
+This will write predictions to the `predictions/` directory. To specify a different output directory:
+```
+rn-coverage predict tokens.h5 -o output/
+```
 
+For advanced use cases, you can provide a config file:
 ```
-rn-converage predict config.yaml
+rn-coverage predict --config config.yaml
 ```
-A minimal configuration file is as below. The outputs will be put under `predictions` in this example. If GPUs are available, they will be used automatically, otherwise it will fall back to running on the CPU.
-```
-model:
-  name: rn-coverage
-
+A minimal configuration file is as below. If GPUs are available, they will be used automatically, otherwise it will fall back to running on the CPU.
+```yaml
 trainer:
   devices: 1
   callbacks:
-    - path: predictions
+    - class_path: src.data.writing.HDF5PredictionWriter
+      init_args:
+        path: predictions
 
 data:
-  batch_size: 1
-  paths:
-    predict:
-      - data/tokens.h5
+  init_args:
+    batch_size: 1
+    paths:
+      predict:
+        - data/tokens.h5
 ```
 The output `predictions/tokens.h5` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.h5` file can be opened with `h5py`.
-
-See `examples/inference` for a MWE.
 
 ## Environment Variables
 

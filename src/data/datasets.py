@@ -4,13 +4,12 @@ from __future__ import annotations
 import os
 from typing import Callable, Union, Sequence, Iterable
 import numpy as np
-import xarray as xr
+import h5py
 import torch
 from torch.utils.data import Dataset, IterableDataset
 from .constants import (
-    NC_EXTENSION,
+    H5_EXTENSION,
     DEFAULT_BATCH_DIMENSION,
-    DEFAULT_NETCDF_ENGINE,
 )
 from .utils import validate_equal_lengths
 import random
@@ -123,21 +122,21 @@ def get_idx_distributed(
     Get the indices for an iterable dataset in a distributed setting. The rank
     and world size are used to distribute the dataset across multiple devices.
 
-    Parameters:
+    Parameters
     ----------
-    num_datapoints (dict[str, int]):
+    num_datapoints : dict[str, int]
         Each dataset, and the corresponding number of datapoints in that
         dataset.
-    batch_size (int):
+    batch_size : int
         The batch size to use.
-    rank (int):
+    rank : int
         The rank of the current device.
-    world_size (int):
+    world_size : int
         The number of devices that the dataset will be distributed across.
 
-    Returns:
+    Returns
     -------
-    list[tuple[str, slice]]:
+    list[tuple[str, slice]]
         A list of tuples, where the first element is the name of the dataset,
         and the second element is a slice that can be used to index the dataset.
     """
@@ -157,20 +156,22 @@ def get_idx_distributed(
     return idx[rank::world_size]
 
 
-def stack_xarray(ds: xr.Dataset, variables: list[str]) -> np.ndarray | None:
+def stack_hdf5(data: dict[str, np.ndarray], variables: list[str]) -> np.ndarray | None:
     """
-    Stack the variables in an xarray dataset into a numpy array. If the list of
-    variables is empty, return None.
+    Stack variables from a dictionary of numpy arrays into a single array.
+    If the list of variables is empty, return None.
 
     Parameters
     ----------
-    ds : xr.Dataset
-        The dataset to stack.
+    data : dict[str, np.ndarray]
+        Dictionary mapping variable names to numpy arrays.
+    variables : list[str]
+        List of variable names to stack.
 
     Returns
     -------
     np.ndarray | None
-        The stacked dataset, or None if the list of variables is empty.
+        The stacked array, or None if the list of variables is empty.
     """
 
     # if the list of variables is empty, return None
@@ -178,7 +179,7 @@ def stack_xarray(ds: xr.Dataset, variables: list[str]) -> np.ndarray | None:
         return None
 
     # stack the variables into a numpy array
-    stack = np.stack([ds[name].values for name in variables], axis=-1)
+    stack = np.stack([data[name] for name in variables], axis=-1)
 
     # if the stack has a single dimension, remove it
     if stack.shape[-1] == 1:
@@ -186,61 +187,51 @@ def stack_xarray(ds: xr.Dataset, variables: list[str]) -> np.ndarray | None:
     return stack
 
 
-class XarrayDataset(Dataset):
+class HDF5Dataset(Dataset):
     """
-    A wrapper class for an xarray dataset, allowing for behaviour similar to a
+    A wrapper class for an HDF5 file, allowing for behaviour similar to a
     PyTorch dataset, as well as shuffling the dataset along the batch dimension.
 
     Parameters
     ----------
     path : str
-        The path to the netCDF file.
-    batch_dimension : str
-        The name of the batch dimension. Defaults to 'batch'.
-    engine : str
-        The engine to use when opening the netCDF file. Defaults to 'h5netcdf'.
+        The path to the HDF5 file.
     """
 
     def __init__(
-            self: XarrayDataset,
+            self: HDF5Dataset,
             path: str,
-            batch_dimension: str = DEFAULT_BATCH_DIMENSION,
-            engine: str = DEFAULT_NETCDF_ENGINE,
     ) -> None:
 
-        # verify that the path exists, and points to a netCDF file
+        # verify that the path exists, and points to an HDF5 file
         if not os.path.exists(path):
             raise ValueError(f'The path "{path}" does not exist.')
-        if not path.endswith(NC_EXTENSION):
+        if not path.endswith(H5_EXTENSION):
             raise ValueError(
-                f'The path "{path}" does not point to a netCDF file.')
+                f'The path "{path}" does not point to an HDF5 file.')
 
-        # open the dataset
-        self.ds = xr.load_dataset(path, engine=engine)
+        self.path = path
 
-        # verify that the batch dimension exists in the dataset
-        if not batch_dimension in self.ds.dims:
-            raise ValueError(
-                f'The batch dimension "{batch_dimension}" does not exist in the dataset at {path}.'
-            )
+        # load all data into memory
+        with h5py.File(path, 'r') as f:
+            self.data = {name: f[name][:] for name in f.keys()}
+            # get batch size from first dataset
+            first_key = list(f.keys())[0]
+            self.num_datapoints = f[first_key].shape[0]
 
-        # store the number of datapoints and the name of the batch dimension
-        self.num_datapoints = self.ds.sizes[batch_dimension]
-        self.batch_dimension = batch_dimension
-
-    def __len__(self: XarrayDataset) -> int:
+    def __len__(self: HDF5Dataset) -> int:
         """
         Return the number of datapoints in the dataset.
         """
         return self.num_datapoints
 
-    def __getitem__(self: XarrayDataset, idx: int | slice) -> xr.Dataset:
+    def __getitem__(self: HDF5Dataset, idx: int | slice) -> dict[str, np.ndarray]:
         """
-        Return the dataset at the specified index or slice.
+        Return the data at the specified index or slice.
         """
-        return self.ds.isel({self.batch_dimension: idx})
+        return {name: arr[idx] for name, arr in self.data.items()}
 
-    def shuffle(self: XarrayDataset) -> None:
+    def shuffle(self: HDF5Dataset) -> None:
         """
         Shuffle the dataset along the batch dimension.
         """
@@ -249,20 +240,21 @@ class XarrayDataset(Dataset):
         idx = np.random.permutation(self.num_datapoints)
 
         # shuffle the dataset
-        self.ds = self.ds.isel({self.batch_dimension: idx})
+        for name in self.data:
+            self.data[name] = self.data[name][idx]
 
 
-class XarrayIterableDataset(IterableDataset):
+class HDF5IterableDataset(IterableDataset):
     """
-    A PyTorch iterable dataset that loads data from one or more netCDF files
-    using Xarray in batches. Each batch is returned as two dictionaries, with
+    A PyTorch iterable dataset that loads data from one or more HDF5 files
+    in batches. Each batch is returned as two dictionaries, with
     the first containing any input variables and the second containing any
     target variables.
 
     Parameters
     ----------
     paths : list[str]
-        The paths to the netCDF files.
+        The paths to the HDF5 files.
     batch_size : int
         The maximum batch size to use.
     input_variables : list[tuple[list[str], str]]
@@ -270,25 +262,23 @@ class XarrayIterableDataset(IterableDataset):
         Each element of the list should be a tuple, where the first element is a
         list of variable names, all of which will be stacked into a single numpy
         array, and the second element is the name of the key in the dictionary
-        that will be yielded. Defaults to an empty list. (WIP)
+        that will be yielded. Defaults to an empty list.
     target_variables : list[tuple[list[str], str]]
         The names of the variables that will be returned in the second dictionary.
         It has the same structure as input_variables. Defaults to an empty list.
     rank : int
         The rank of the current device. Defaults to 0.
     world_size : int
-        The number of devices that this dataset will be distributed across. 
+        The number of devices that this dataset will be distributed across.
         Defaults to 1.
     should_shuffle : bool
         Whether the dataset should be shuffled. Defaults to False.
-    batch_dimension : str
-        The name of the batch dimension. Defaults to 'batch'.
-    engine : str
-        The engine to use when opening the netCDF files. Defaults to 'h5netcdf'.
+    transforms : list[Callable]
+        List of transform functions to apply. Defaults to an empty list.
     """
 
     def __init__(
-            self: XarrayIterableDataset,
+            self: HDF5IterableDataset,
             paths: list[str],
             batch_size: int,
             input_variables: list[tuple[list[str], str]] = [],
@@ -296,8 +286,6 @@ class XarrayIterableDataset(IterableDataset):
             rank: int = 0,
             world_size: int = 1,
             should_shuffle: bool = False,
-            batch_dimension: str = DEFAULT_BATCH_DIMENSION,
-            engine: str = DEFAULT_NETCDF_ENGINE,
             transforms: list[Callable] = [],
     ) -> None:
 
@@ -324,11 +312,7 @@ class XarrayIterableDataset(IterableDataset):
 
         # open the datasets
         self.datasets = {
-            path: XarrayDataset(
-                path=path,
-                batch_dimension=batch_dimension,
-                engine=engine,
-            )
+            path: HDF5Dataset(path=path)
             for path in paths
         }
 
@@ -346,10 +330,10 @@ class XarrayIterableDataset(IterableDataset):
             world_size=world_size,
         )
 
-    def __iter__(self: XarrayIterableDataset) -> Iterable[tuple[dict[str, np.ndarray], dict[str, np.ndarray]]]:
+    def __iter__(self: HDF5IterableDataset) -> Iterable[tuple[dict[str, np.ndarray], dict[str, np.ndarray]]]:
         """
         Iterate over the dataset in batches, shuffling the dataset along the
-        batch dimension if specified. The input and target variables of each 
+        batch dimension if specified. The input and target variables of each
         batch are stacked into numpy arrays and yielded. If the list of target
         variables is empty, the targets are set to None.
         """
@@ -371,19 +355,19 @@ class XarrayIterableDataset(IterableDataset):
             # loop over the indices
             for path, ix in idx:
                 batch = self.datasets[path][ix]
-                x = {out_name: stack_xarray(batch, in_names)
+                x = {out_name: stack_hdf5(batch, in_names)
                      for in_names, out_name in self.input_variables}
-                y = {out_name: stack_xarray(batch, in_names)
+                y = {out_name: stack_hdf5(batch, in_names)
                      for in_names, out_name in self.target_variables}
                 yield x, y
 
-    def __len__(self: XarrayIterableDataset) -> int:
+    def __len__(self: HDF5IterableDataset) -> int:
         """
         Return the number of batches in the dataset.
         """
         return len(self.idx)
 
-    def shuffle(self: XarrayIterableDataset) -> None:
+    def shuffle(self: HDF5IterableDataset) -> None:
         """
         Shuffle each dataset along the batch dimension.
         """

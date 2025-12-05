@@ -8,28 +8,27 @@ import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_warn
-from .datasets import XarrayIterableDataset
+from .datasets import HDF5IterableDataset
 from .utils import get_filename
-import xarray as xr
-from .constants import NC_EXTENSION, VALID_PHASES
+from .constants import H5_EXTENSION, VALID_PHASES
 
 class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
     """
     An abstract base class for Pytorch Lightning DataModules. It provides a
     simple interface for creating datasets and dataloaders, and for extracting
-    inputs and targets from a batch. 
+    inputs and targets from a batch.
 
-    Parameters:
+    Parameters
     ----------
-    batch_size (int): 
+    batch_size : int
         The batch size to use for the dataloaders.
-    num_workers (int):
-        The number of workers to use for the dataloaders. If set to -1, the 
+    num_workers : int
+        The number of workers to use for the dataloaders. If set to -1, the
         number of workers is set to the number of available CPUs. Defaults to 1.
     """
     def __init__(
-            self, 
-            batch_size : int, 
+            self,
+            batch_size : int,
             num_workers : int = 1,
             ) -> None:
         super().__init__()
@@ -45,7 +44,7 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         # save batch size
         self.batch_size = batch_size
 
-        # determine the number of workers from the number of available CPUs if 
+        # determine the number of workers from the number of available CPUs if
         # num_workers is set to -1, otherwise use the provided value
         if num_workers == -1:
             num_workers = os.cpu_count()
@@ -54,14 +53,14 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
 
     def distributed_info(self) -> tuple[int, int]:
         """
-        Returns the rank and world size of the current process. If this is 
+        Returns the rank and world size of the current process. If this is
         called too early, before the trainer object has been created, the rank
         is set to 0 and the world size is set to 1, which may cause issues with
         distributed training.
 
-        Returns:
+        Returns
         -------
-        tuple[int, int]: 
+        tuple[int, int]
             The rank and world size of the current process.
         """
         try:
@@ -83,61 +82,61 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
 
     @abstractmethod
     def create_datasets(
-        self, 
-        phase: str, 
-        rank: int, 
+        self,
+        phase: str,
+        rank: int,
         world_size: int,
     ) -> Sequence | Iterable:
         """
         Create a dataset for the specified phase. An abstract method that must
         be implemented by a subclass.
 
-        Parameters:
+        Parameters
         ----------
-        phase (str): 
-            The phase for which to create the datasets. Can be one of 'train', 
+        phase : str
+            The phase for which to create the datasets. Can be one of 'train',
             'val', 'test', or 'predict'.
-        rank (int):
+        rank : int
             The rank of the current process.
-        world_size (int):
+        world_size : int
             The total number of processes.
 
-        Returns:
+        Returns
         -------
-        (Sequence | Iterable): 
+        Sequence | Iterable
             The dataset for the specified phase.
         """
-        return   
-    
+        return
+
 
     def create_dataloaders(self, phase: str) -> DataLoader:
         """
-        Create a dataloader for the specified phase. Overwrite this method if 
+        Create a dataloader for the specified phase. Overwrite this method if
         you want to use a custom dataloader construction, such as if batching
         is handled by the dataset itself.
 
-        The default implementation creates a dataloader with the following 
+        The default implementation creates a dataloader with the following
         parameters:
         - num_workers = self.num_workers
         - batch_size = self.batch_size
         - shuffle = (phase == 'train')
 
-        Parameters:
+        Parameters
         ----------
-        phase (str): 
-            The phase for which to create the dataloaders. Can be one of 
+        phase : str
+            The phase for which to create the dataloaders. Can be one of
             'train', 'validate', 'test', or 'predict'.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The dataloader for the specified phase.
         """
         if phase not in VALID_PHASES:
             raise ValueError(
                 f'Unknown phase {phase}. Must be one of {VALID_PHASES}.'
                 )
-        
+
         if self.data[phase] is None:
             raise ValueError(
                 f'There is no {phase} dataset. Please call the setup method with the appropriate stage first, and ensure your _create_datasets method returns a dataset for the {phase} phase.'
@@ -150,22 +149,22 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
             shuffle = (phase == 'train'),
             multiprocessing_context = 'fork' if torch.mps.is_available() else None,
         )
-    
+
 
     def setup(self, stage: str) -> None:
         """
-        Creates datasets for the specified stage, and stores them in the 
+        Creates datasets for the specified stage, and stores them in the
         'self.data' dictionary.
 
-        Parameters:
+        Parameters
         ----------
-        stage (str): 
-            The stage of the data setup. Must be either 'fit', 'validate', 
+        stage : str
+            The stage of the data setup. Must be either 'fit', 'validate',
             'test', or 'predict'.
 
-        Raises:
-        -------
-        ValueError: 
+        Raises
+        ------
+        ValueError
             If the stage is not one of 'fit', 'validate', 'test', or 'predict'.
         """
         rank, world_size = self.distributed_info()
@@ -191,9 +190,9 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         """
         Returns the train dataloader.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The train dataloader.
         """
         return self.create_dataloaders('train')
@@ -204,9 +203,9 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         Returns the validaiton dataloader, if a validation dataset exists. Else,
         raises a NotImplementedError.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The validation dataloader.
         """
         if self.data['validate'] is None:
@@ -219,9 +218,9 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         """
         Returns the test dataloader.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The test dataloader.
         """
         if self.data['test'] is None:
@@ -235,9 +234,9 @@ class BarebonesDataModule(pl.LightningDataModule, metaclass=ABCMeta):
         """
         Returns the prediction dataloader.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The prediction dataloader.
         """
         if self.data['predict'] is None:
@@ -252,16 +251,16 @@ def recursively_find_files(dir : str, extension : str) -> list[str]:
     """
     Recursively find all files with a given extension in a directory.
 
-    Parameters:
-    -----------
-    dir (str):
+    Parameters
+    ----------
+    dir : str
         The directory to search.
-    extension (str):
+    extension : str
         The file extension to search for.
 
-    Returns:
-    --------
-    list[str]:
+    Returns
+    -------
+    list[str]
         A list of file paths.
     """
     files = []
@@ -272,35 +271,36 @@ def recursively_find_files(dir : str, extension : str) -> list[str]:
     return files
 
 
-class XarrayDataModule(BarebonesDataModule):
+class HDF5DataModule(BarebonesDataModule):
     """
-    A DataModule for netCDF data, providing functionality for loading, 
+    A DataModule for HDF5 data, providing functionality for loading,
     transforming, and batching the data.
 
-    Parameters:
+    Parameters
     ----------
-    input_variables (list[str]):
-        The names of the input variables.
-    target_variables (list[str], optional):
+    input_variables : list[tuple[list[str], str]]
+        The names of the input variables. Each element is a tuple containing
+        a list of variable names to stack and the output key name.
+    target_variables : list[tuple[list[str], str]]
         The names of the target variables. Defaults to an empty list.
-    stack_dim (int, optional):
+    stack_dim : int
         The dimension to stack the input and target variables along. Defaults
         to -1.
-    paths (dict[str, list[str]]):
-        A dictionary containing the paths to the data for each phase. The 
+    paths : dict[str, list[str]]
+        A dictionary containing the paths to the data for each phase. The
         phases can be 'train', 'validate', 'test', or 'predict'. The paths can
-        be directories containing netCDF files, or the netCDF files themselves.
-    transforms (dict[str, list[Callable[[xr.Dataset], xr.Dataset]]]):
-        A dictionary containing a list of transforms for each phase. The 
-        transforms are applied to the dataset before it is returned.
+        be directories containing HDF5 files, or the HDF5 files themselves.
+    transforms : dict[str, list[Callable[[dict], dict]]]
+        A dictionary containing a list of transforms for each phase. The
+        transforms are applied to the data before it is returned.
     """
     def __init__(
-            self, 
+            self,
             input_variables : list[tuple[list[str], str]] = [],
             target_variables : list[tuple[list[str], str]] = [],
             stack_dim : int = -1,
             paths : dict[str, list[str]] = {},
-            transforms : dict[str, list[Callable[[xr.Dataset], xr.Dataset]]] = {},
+            transforms : dict[str, list[Callable[[dict], dict]]] = {},
             *args, **kwargs,
             ) -> None:
         super().__init__(*args, **kwargs)
@@ -326,32 +326,32 @@ class XarrayDataModule(BarebonesDataModule):
             for path in phase_paths:
                 if os.path.isdir(path):
                     self.data_paths[phase].extend(
-                        recursively_find_files(path, NC_EXTENSION)
+                        recursively_find_files(path, H5_EXTENSION)
                         )
                 else:
                     self.data_paths[phase].append(path)
-        
+
         # store the names of each dataset
         get_data_names = lambda paths: [get_filename(path) for path in paths] if paths is not None else None
         self.data_names = {
             phase : get_data_names(paths) for phase, paths in self.data_paths.items()
             }
-        
+
         # store the transforms
         self.transforms = {phase : transforms.get(phase, []) for phase in VALID_PHASES}
 
         # raise an error if the number of workers is greater than 1
         if self.num_workers > 1:
             raise ValueError(
-                'The number of workers cannot exceed 1 for netCDF datasets.' \
+                'The number of workers cannot exceed 1 for HDF5 datasets.' \
                 ' Exactly one is preferable.'
                 )
 
 
     def create_datasets(
-            self, 
-            phase: str, 
-            rank: int, 
+            self,
+            phase: str,
+            rank: int,
             world_size: int,
             ) -> Iterable:
         """
@@ -365,9 +365,9 @@ class XarrayDataModule(BarebonesDataModule):
                     'If this was intended, please ignore this warning. Otherwise, ' \
                     'your model may fail to train or validate correctly.'
                     )
-            
+
             if phase != 'predict':
-                return XarrayIterableDataset(
+                return HDF5IterableDataset(
                     paths = self.data_paths[phase],
                     batch_size = self.batch_size,
                     input_variables = self.input_variables,
@@ -378,7 +378,7 @@ class XarrayDataModule(BarebonesDataModule):
                     transforms = self.transforms[phase]
                     )
             else:
-                return [XarrayIterableDataset(
+                return [HDF5IterableDataset(
                     paths = [path],
                     batch_size = self.batch_size,
                     input_variables = self.input_variables,
@@ -388,23 +388,23 @@ class XarrayDataModule(BarebonesDataModule):
                     should_shuffle = phase == 'train',
                     transforms = self.transforms[phase]
                     ) for path in self.data_paths[phase]]
-    
+
 
     def create_dataloaders(self, phase: str) -> DataLoader:
         """
         Create a dataloader for the specified phase.
 
-        Parameters:
+        Parameters
         ----------
-        phase (str): 
-            The phase for which to create the dataloaders. Can be one of 
+        phase : str
+            The phase for which to create the dataloaders. Can be one of
             'train', 'val', 'test', or 'predict'.
 
-        Returns:
+        Returns
         -------
-        torch.utils.data.DataLoader: 
+        torch.utils.data.DataLoader
             The dataloader for the specified phase.
-        """        
+        """
         if phase not in VALID_PHASES:
             raise ValueError(
                 f'Unknown phase {phase}. Must be one of {VALID_PHASES}.'

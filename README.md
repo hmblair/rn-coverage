@@ -62,6 +62,63 @@ data:
 ```
 The output `predictions/tokens.h5` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.h5` file can be opened with `h5py`.
 
+## Fine-tuning
+
+Fine-tuning is done via the `train` subcommand:
+```
+rn-coverage train config.yaml
+```
+
+### Data Format
+
+Training data should be HDF5 files (`.h5`) containing:
+- `sequence`: tokenized RNA sequences (integers 0-3 for A, C, G, U/T)
+- Target variables (e.g., `2A3`, `DMS`): the values to predict
+
+Which datasets to use is configured via `input_variables` and `target_variables`:
+```yaml
+data:
+  class_path: src.data.datamodules.HDF5DataModule
+  init_args:
+    input_variables:
+      - [[sequence], x]           # read 'sequence' dataset, output as 'x'
+    target_variables:
+      - [[2A3, DMS], target]      # stack '2A3' and 'DMS', output as 'target'
+    paths:
+      train:
+        - data/train.h5
+      validate:
+        - data/val.h5
+```
+
+### Example Configuration
+
+See `examples/training/config.yaml` for a complete example. Key settings include:
+- `trainer.max_epochs`: number of training epochs
+- `trainer.callbacks`: checkpointing, early stopping, layer unfreezing schedule
+- `optimizer.lr`: learning rate
+- `data.init_args.batch_size`: batch size
+
+The `FineTuningScheduler` callback progressively unfreezes RibonanzaNet layers during training, which can improve fine-tuning stability.
+
+## CLI Reference
+
+The CLI is built on [PyTorch Lightning CLI](https://lightning.ai/docs/pytorch/stable/cli/lightning_cli.html). Available subcommands:
+
+| Command | Description |
+|---------|-------------|
+| `rn-coverage train <config>` | Fine-tune the model |
+| `rn-coverage predict <input.h5>` | Run inference (simple mode) |
+| `rn-coverage predict --config <config>` | Run inference (config mode) |
+| `rn-coverage tokenize <input> <output.h5>` | Tokenize sequences |
+
+For advanced usage, you can also invoke the CLI directly:
+```
+python -m src fit --config config.yaml      # training
+python -m src validate --config config.yaml # validation only
+python -m src predict --config config.yaml  # inference
+```
+
 ## Environment Variables
 
 | Variable | Default | Description |

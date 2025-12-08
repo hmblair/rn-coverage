@@ -74,7 +74,7 @@ To fine-tune from the pre-trained checkpoint, use `finetune`:
 rn-coverage finetune config.yaml
 ```
 
-The difference is which base config is used (`config/training.yaml` vs `config/finetuning.yaml`).
+The same user config works for both commands. The difference is which base config is used (`config/training.yaml` vs `config/finetuning.yaml`), which determines whether to load the pre-trained checkpoint.
 
 ### Data Format
 
@@ -100,7 +100,7 @@ data:
 
 ### Example Configuration
 
-See `examples/training/config.yaml` for a complete example. Key settings include:
+See `examples/fit/config.yaml` for a complete example that works with both `train` and `finetune`. Key settings include:
 - `trainer.max_epochs`: number of training epochs
 - `trainer.callbacks`: checkpointing, early stopping, layer unfreezing schedule
 - `optimizer.lr`: learning rate

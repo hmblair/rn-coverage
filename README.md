@@ -62,12 +62,19 @@ data:
 ```
 The output `predictions/tokens.h5` will contain a single $`n \times 2`$ dataset `reads`, inside which are the predicted reads for 2A3 and DMS experiments. This `.h5` file can be opened with `h5py`.
 
-## Fine-tuning
+## Training
 
-Fine-tuning is done via the `train` subcommand:
+Training from scratch is done via the `train` subcommand:
 ```
 rn-coverage train config.yaml
 ```
+
+To fine-tune from the pre-trained checkpoint, use `finetune`:
+```
+rn-coverage finetune config.yaml
+```
+
+The difference is which base config is used (`config/training.yaml` vs `config/finetuning.yaml`).
 
 ### Data Format
 
@@ -103,21 +110,14 @@ The `FineTuningScheduler` callback progressively unfreezes RibonanzaNet layers d
 
 ## CLI Reference
 
-The CLI is built on [PyTorch Lightning CLI](https://lightning.ai/docs/pytorch/stable/cli/lightning_cli.html). Available subcommands:
-
 | Command | Description |
 |---------|-------------|
-| `rn-coverage train <config>` | Fine-tune the model |
-| `rn-coverage predict <input.h5>` | Run inference (simple mode) |
-| `rn-coverage predict --config <config>` | Run inference (config mode) |
 | `rn-coverage tokenize <input> <output.h5>` | Tokenize sequences |
-
-For advanced usage, you can also invoke the CLI directly:
-```
-python -m src fit --config config.yaml      # training
-python -m src validate --config config.yaml # validation only
-python -m src predict --config config.yaml  # inference
-```
+| `rn-coverage predict <input.h5> [-o dir]` | Run inference (simple mode) |
+| `rn-coverage predict --config <config>` | Run inference (config mode) |
+| `rn-coverage train <config>` | Train from scratch |
+| `rn-coverage finetune <config>` | Fine-tune from pre-trained checkpoint |
+| `rn-coverage extract <input.h5> <output>` | Extract sequences from HDF5 |
 
 ## Environment Variables
 

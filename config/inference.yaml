@@ -11,7 +11,8 @@ model:
 
 trainer:
   precision: 16-mixed
-  accelerator: gpu
+  accelerator: auto
+  devices: 1
   callbacks:
     - class_path: src.data.writing.HDF5PredictionWriter
       init_args:
